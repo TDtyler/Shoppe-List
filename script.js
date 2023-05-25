@@ -5,7 +5,7 @@ const clearBtn = document.getElementById('clear');
 const itemFilter = document.getElementById('filter');
 const items = itemList.querySelectorAll('li');
 
-function addItem(e) {
+function onAddItemSubmit(e) {
     e.preventDefault();
 
  const newItem = itemInput.value;
@@ -16,20 +16,41 @@ function addItem(e) {
         return;
     }
 
-    // Create List Item
-    const li = document.createElement('li');
-    li.appendChild(document.createTextNode(newItem));
+   addItemToDom(newItem);
 
-   const button = createButton('remove-item btn-link text-red');
-   li.appendChild(button);
-
-// add li to the DOM
-   itemList.appendChild(li);
+   addItemToStorage(newItem);
 
    checkUI();
 
    itemInput.value = '';
 }
+
+function addItemToDom(item) {
+     // Create List Item
+     const li = document.createElement('li');
+     li.appendChild(document.createTextNode(item));
+ 
+    const button = createButton('remove-item btn-link text-red');
+    li.appendChild(button);
+ 
+ // add li to the DOM
+    itemList.appendChild(li);
+}
+
+function addItemToStorage (item) {
+    let itemsFromStorage;
+
+    if (localStorage.getItem('items') === null) {
+        itemsFromStorage = [];
+    } else {
+        itemsFromStorage = JSON.parse(localStorage.getItem('items'));
+    }
+
+    itemsFromStorage.push(item);
+}
+
+// convert to JSON string and set to local storage
+localStorage.setItem('items', JSON.stringify(itemsFromStorage));
 
 function createButton(classes) {
     const button = document.createElement('button');
@@ -66,6 +87,21 @@ function clearItems () {
     checkUI();
 }
 
+function filterItems(e) {
+    const items = itemList.querySelectorAll('li');
+    const text = e.target.value.toLowerCase();
+
+    items.forEach(item => {
+        const itemName = item.firstChild.textContent.toLowerCase();
+
+        if (itemName.indexOf(text)!= -1) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
 function checkUI() {
     const items = itemList.querySelectorAll('li');
 
@@ -79,8 +115,9 @@ function checkUI() {
 } 
 
 //Event Listeners
-itemForm.addEventListener('submit', addItem);
+itemForm.addEventListener('submit', onAddItemSubmit);
 itemList.addEventListener('click', removeItem);
 clearBtn.addEventListener('click', clearItems);
+itemFilter.addEventListener('input', filterItems);
 
 checkUI();
